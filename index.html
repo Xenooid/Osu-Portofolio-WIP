@@ -820,6 +820,11 @@
                 document.getElementById('avatar').src = user.avatar_url;
                 document.getElementById('name').textContent = user.username;
                 
+                const usernameEl = document.querySelector('.username');
+                if (usernameEl) {
+                    usernameEl.innerHTML = `osu! Username: <a href="https://osu.ppy.sh/users/${user.id}" target="_blank" class="osu-link">${user.username}</a>`;
+                }
+                
                 const bannerEl = document.getElementById('header-banner');
                 if (user.cover?.url) {
                     bannerEl.style.backgroundImage = `url(${user.cover.url})`;
