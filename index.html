@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xenoid - osu! Pro Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface2: #f1f5f9;
+            --border: #e2e8f0;
+            --accent: #ff66aa;
+            --accent2: #79d7fd;
+            --accent-soft: rgba(255, 102, 170, 0.1);
+            --accent-strong: rgba(255, 102, 170, 0.15);
+            --text: #1e293b;
+            --text2: #64748b;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        html.dark {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #334155;
+            --border: #475569;
+            --accent: #ff66aa;
+            --accent2: #79d7fd;
+            --accent-soft: rgba(255, 102, 170, 0.12);
+            --accent-strong: rgba(255, 102, 170, 0.2);
+            --text: #f1f5f9;
+            --text2: #94a3b8;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 1.5rem 3rem;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .background-shapes {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: 0.6;
+            will-change: transform;
+        }
+
+        .shape-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #ff66aa 0%, #79d7fd 100%);
+            top: -250px;
+            right: -200px;
+            animation: float1 8s ease-in-out infinite;
+        }
+
+        .shape-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #79d7fd 0%, #ff66aa 100%);
+            bottom: -200px;
+            left: -150px;
+            animation: float2 10s ease-in-out infinite;
+        }
+
+        .shape-3 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #ff66aa 0%, #79d7fd 100%);
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: float3 12s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25% { transform: translate(-100px, 80px) scale(1.15) rotate(8deg); }
+            50% { transform: translate(-80px, 120px) scale(0.9) rotate(-6deg); }
+            75% { transform: translate(60px, 100px) scale(1.1) rotate(4deg); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(100px, -100px) scale(1.12) rotate(-8deg); }
+            66% { transform: translate(60px, -140px) scale(0.88) rotate(6deg); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(-50%, 0) scale(1) rotate(0deg); }
+            25% { transform: translate(-50%, -80px) scale(1.18) rotate(8deg); }
+            50% { transform: translate(-50%, -40px) scale(0.85) rotate(-10deg); }
+            75% { transform: translate(-50%, 60px) scale(1.12) rotate(5deg); }
+        }
+
+        .header-banner {
+            width: 100vw;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                transparent 40%,
+                var(--bg) 100%
+            );
+            z-index: 1;
+        }
+
+        .header-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to right,
+                var(--bg) 0%,
+                transparent 8%,
+                transparent 92%,
+                var(--bg) 100%
+            );
+            z-index: 1;
+        }
+
+        header {
+            text-align: left;
+            margin-bottom: 2rem;
+            padding-top: 100px;
+            animation: fadeInUp 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--surface);
+            box-shadow: var(--shadow-lg);
+            background: var(--surface);
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .logo {
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--mono);
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: clamp(1.875rem, 5vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.375rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text2);
+        }
+
+        .username {
+            font-size: 0.875rem;
+            color: var(--text2);
+        }
+
+        .osu-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .osu-link:hover {
+            text-decoration: underline;
+        }
+
+        .theme-toggle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+            position: fixed;
+            left: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle svg {
+            width: 28px;
+            height: 28px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: fadeInUp 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+            backdrop-filter: blur(10px);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            background: linear-gradient(to bottom, var(--surface2), transparent);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.3s ease;
+        }
+
+        .section-header:hover {
+            background: var(--surface2);
+        }
+
+        .section-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .section-toggle {
+            font-size: 1.3rem;
+            transition: transform 0.3s;
+            color: var(--accent);
+        }
+
+        .section-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 0 1.5rem;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+
+        .section-content.collapsed {
+            max-height: 0 !important;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .section-content-inner {
+            padding: 1.5rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text2);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .about-text {
+            color: var(--text);
+            line-height: 1.8;
+        }
+
+        .about-text a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .about-text a:hover {
+            text-decoration: underline;
+        }
+
+        .about-text img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .about-text img:hover {
+            transform: scale(1.02);
+        }
+
+        .about-text .bbcode-box {
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .about-text .bbcode-box-header {
+            background: var(--surface2);
+            padding: 0.875rem 1.25rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.3s;
+        }
+
+        .about-text .bbcode-box-header:hover {
+            background: var(--border);
+        }
+
+        .about-text .bbcode-box-toggle {
+            font-size: 1.3rem;
+            transition: transform 0.3s;
+            color: var(--accent);
+        }
+
+        .about-text .bbcode-box-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .about-text .bbcode-box-content {
+            padding: 0 1.25rem;
+            background: var(--bg);
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            max-height: 600px;
+        }
+
+        .about-text .bbcode-box-content.collapsed {
+            max-height: 0 !important;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+        }
+
+        .about-text .bbcode-box-content-inner {
+            padding: 1.25rem 0;
+        }
+
+        .about-text .bbcode-box-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .about-text .bbcode-box-content::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        .about-text .bbcode-box-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .about-text .bbcode-box-content::-webkit-scrollbar-thumb:hover {
+            background: var(--text2);
+        }
+
+        .about-text .bbcode-notice {
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-strong);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .about-text .bbcode-centre {
+            text-align: center;
+        }
+
+        .about-text .bbcode-size-200 {
+            font-size: 2rem;
+        }
+
+        .about-text .bbcode-size-150 {
+            font-size: 1.5rem;
+        }
+
+        .about-text .bbcode-imagemap-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .about-text .bbcode-imagemap-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+            display: block;
+        }
+
+        .best-scores {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .score-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        .score-card:hover {
+            transform: translateX(4px);
+            background: var(--accent-soft);
+            border-color: var(--accent);
+        }
+
+        .score-rank {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .beatmap-thumbnail {
+            width: 120px;
+            height: 67.5px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .beatmap-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .beatmap-title {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .beatmap-artist {
+            font-size: 0.8125rem;
+            color: var(--text2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .score-stats {
+            display: flex;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .score-stat {
+            text-align: center;
+        }
+
+        .score-stat-value {
+            font-weight: 700;
+            font-size: 0.9375rem;
+            color: var(--accent);
+        }
+
+        .score-stat-label {
+            font-size: 0.6875rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .pagination button {
+            padding: 0.625rem 1.25rem;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: var(--sans);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.875rem;
+            color: var(--text2);
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text2);
+            padding: 2rem;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .lightbox.show {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+        }
+
+        footer {
+            margin-top: 1.75rem;
+            font-size: 0.75rem;
+            color: var(--text2);
+            text-align: center;
+            animation: fadeInUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(1.5rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .score-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .score-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .beatmap-thumbnail {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 16/9;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="header-banner" id="header-banner"></div>
+
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <svg class="icon-moon" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" style="display:none">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <img id="avatar" src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20gamer%20avatar%20osu%20player&image_size=square_hd" alt="Xenoid Avatar" class="avatar">
+                <div class="header-text">
+                    <div class="logo">osu! Player</div>
+                    <h1 id="name">Loading...</h1>
+                    <p class="username">osu! Username: <a href="https://osu.ppy.sh/users/Xenoid" target="_blank" class="osu-link">Xenoid</a></p>
+                </div>
+            </div>
+        </header>
+
+        <div class="card">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);">
+                <h2 style="font-size: 1.125rem; font-weight: 600;">Statistics</h2>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="stats-grid" id="stats">
+                    <div class="loading">Loading stats...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>About</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="section-content-inner">
+                    <p class="about-text" id="about">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>Top 100 Best Scores</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="section-content-inner">
+                    <div class="best-scores" id="best-scores">
+                        <div class="loading">Loading best scores...</div>
+                    </div>
+                    <div class="pagination" id="pagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>&copy; 2025 Xenoid - osu! Player Portfolio</footer>
+    </div>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Lightbox Image">
+    </div>
+
+    <script>
+        let allScores = [];
+        const scoresPerPage = 10;
+        let currentPage = 1;
+
+        async function fetchUserData() {
+            try {
+                const response = await fetch('/api/user');
+                const user = await response.json();
+                
+                console.log('Full user data:', user);
+                
+                document.getElementById('avatar').src = user.avatar_url;
+                document.getElementById('name').textContent = user.username;
+                
+                const bannerEl = document.getElementById('header-banner');
+                if (user.cover?.url) {
+                    bannerEl.style.backgroundImage = `url(${user.cover.url})`;
+                } else if (user.cover_url) {
+                    bannerEl.style.backgroundImage = `url(${user.cover_url})`;
+                } else {
+                    bannerEl.style.backgroundImage = 'linear-gradient(135deg, #ff66aa 0%, #79d7fd 100%)';
+                }
+                
+                const statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-value">#${user.statistics.global_rank?.toLocaleString() || '-'}</div>
+                        <div class="stat-label">Global Rank</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">#${user.statistics.country_rank?.toLocaleString() || '-'}</div>
+                        <div class="stat-label">${user.country.name} Rank</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${user.statistics.hit_accuracy?.toFixed(2)}%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${user.statistics.play_count?.toLocaleString()}</div>
+                        <div class="stat-label">Play Count</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${user.statistics.pp?.toLocaleString()}</div>
+                        <div class="stat-label">Performance Points</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${user.statistics.level.current}</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                `;
+                document.getElementById('stats').innerHTML = statsHtml;
+                
+                const aboutEl = document.getElementById('about');
+                aboutEl.innerHTML = `
+                    <div class="bbcode-imagemap-container">
+                        <img src="https://i.ibb.co.com/ymmf2M5w/IMG-20251115-WA004711.jpg" alt="Collab" onclick="openLightbox(this.src)">
+                    </div>
+                    
+                    <div class="bbcode-box" id="past-collab-box">
+                        <div class="bbcode-box-header" onclick="toggleBBCodeBox(this)">
+                            <span><b>Past Collab</b></span>
+                            <span class="bbcode-box-toggle">▼</span>
+                        </div>
+                        <div class="bbcode-box-content">
+                            <div class="bbcode-box-content-inner">
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co.com/fhxR2gW/20260510-220030.jpg" alt="Past Collab 1" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-notice bbcode-centre">
+                                    <div class="bbcode-size-200"><b>››› <span style="color: #E9407A">osu!</span> x <span style="color: #FE0006">Path to Nowhere</span> Collab ‹‹‹</b></div>
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container bbcode-centre">
+                                    <img src="https://i.postimg.cc/Z5wNF1rB/osu-x-PTN-Collab.jpg" alt="osu! x PTN Collab" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co.com/TMfNqFm6/Yaw-NDeru-20250918-154901-0000.png" alt="Collab 2" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/tPZTKQyz/p-20250902-155525-0000.png" alt="Collab 3" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/pvzwDhVd/Canvas-1.png" alt="Collab 4" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container bbcode-centre">
+                                    <img src="https://i.ibb.co/7tWqdD9h/zikaynmgenttt.png" alt="Collab 5" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container bbcode-centre">
+                                    <img src="https://i.ibb.co/5gpx0nyQ/seggggggggs.png" alt="Collab 6" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.postimg.cc/9f0psxWr/DKIDOO-FAMILIA.png" alt="Collab 7" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/M22Fqp6/Collab.png" alt="Collab 8" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/ksLDN9zR/dokodemoissyo.png" alt="Collab 9" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/k5tFrNJ/senoit.png" alt="Collab 10" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/GWpf7w9/walawe.png" alt="Collab 11" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/VqGJBqd/aa.png" alt="Collab 12" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://i.ibb.co/nMtNq4S/FINAL2.png" alt="Collab 13" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://imgur-archive.ppy.sh/discord/1149007298925178903-1188264473694314586-Persona.png" alt="Collab 14" onclick="openLightbox(this.src)">
+                                </div>
+                                
+                                <div class="bbcode-imagemap-container">
+                                    <img src="https://imgur-archive.ppy.sh/discord/1149014314871693443-1155898602674212936-Collab_Makanan_Nusantara_With_Sponsor1.png" alt="Collab 15" onclick="openLightbox(this.src)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <a href="https://www.youtube.com/@Xenoid175" target="_blank" class="bbcode-size-150" style="color: #79d7fd; text-decoration: none;"><b>Liveplay here</b></a>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <p>Asus TUF VG259Q3A 180hz - <a href="https://www.asus.com/id/displays-desktops/monitors/all-series/tuf-gaming-vg259q3a/" target="_blank" style="color: #79d7fd;">[Link]</a></p>
+                        <p>ATK VXE Dragonfly R1 SE+ wireless - <a href="https://www.atk.store/products/vxe-dragonfly-r1-series-wireless-mouse?variant=44857375391962" target="_blank" style="color: #79d7fd;">[Link]</a></p>
+                        <p>ATK Sky XSoft Mousepad - <a href="https://www.atk.store/products/atk-sky-xsoft-esport-gaming-mousepad?srsltid=AfmBOopqacJj7n_PjiMcRJgkvJ71iTPBSoljgLkCKmBerRGU_nqGLNKN" target="_blank" style="color: #79d7fd;">[Link]</a></p>
+                        <p>MCHOSE Ace68 Pro HE (B N) - Outemu Ice Blue Magnetic Switch - <a href="https://www.mchose.store/products/mchose-ace-68-hall-effect-magnetic-switch-gaming-keyboard?srsltid=AfmBOoq4s7WyJMiHL-8ddqebHolyYt_RzPA8CoP2Sf7KiLaUiAX2JJPP" target="_blank" style="color: #79d7fd;">[Link]</a></p>
+                        <p>Logitech G335 wired headset - <a href="https://www.logitechg.com/id-id/products/gaming-audio/g335-gaming-headset.981-001019.html" target="_blank" style="color: #79d7fd;">[Link]</a></p>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <p>800 DPI</p>
+                        <p>6/11 windows</p>
+                        <p>1.05x raw input</p>
+                        <p>1920x1080</p>
+                    </div>
+                    
+                    <div class="bbcode-box" id="old-peripherals-box">
+                        <div class="bbcode-box-header" onclick="toggleBBCodeBox(this)">
+                            <span>Old Peripherals / Settings</span>
+                            <span class="bbcode-box-toggle">▼</span>
+                        </div>
+                        <div class="bbcode-box-content">
+                            <div class="bbcode-box-content-inner">
+                                <p>LG 24MK400H-B 75hz</p>
+                                <p>Logitech G102 wired</p>
+                                <p>Sades SD-84 Deskmat 80x40cm</p>
+                                <p>Rexus MX9 Legionare - Outemu Brown</p>
+                                <p>Fantech Maxfit61 - Gateron G Pro 2.0 Yellow</p>
+                                <br>
+                                <p>2300 DPI</p>
+                                <p>6/11 windows</p>
+                                <p>0.65x raw input</p>
+                                <p>1152x864 letterbox</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <a href="https://info.flagcounter.com/wbN1" target="_blank"><img src="https://s01.flagcounter.com/mini/wbN1/bg_79D7FD/txt_000000/border_CCCCCC/flags_0/" alt="Flag Counter" onclick="openLightbox(this.src)"></a>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <p><b>Nothing to see here.</b></p>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <img src="https://osu.ppy.sh/ss/19606495/7142" alt="Screenshot" onclick="openLightbox(this.src)">
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    initializeSections();
+                }, 100);
+
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                document.getElementById('about').textContent = 'Failed to load data. Make sure the server is running.';
+            }
+        }
+
+        function renderScores() {
+            const startIndex = (currentPage - 1) * scoresPerPage;
+            const endIndex = startIndex + scoresPerPage;
+            const pageScores = allScores.slice(startIndex, endIndex);
+
+            const scoresHtml = pageScores.map((score, index) => `
+                <a href="https://osu.ppy.sh/scores/osu/${score.best_id}" target="_blank" class="score-card">
+                    <div class="score-rank">#${startIndex + index + 1}</div>
+                    <img src="${score.beatmapset.covers.list}" alt="${score.beatmapset.title}" class="beatmap-thumbnail">
+                    <div class="beatmap-info">
+                        <div class="beatmap-title">${score.beatmapset.title}</div>
+                        <div class="beatmap-artist">${score.beatmapset.artist} - [${score.beatmap.version}]</div>
+                    </div>
+                    <div class="score-stats">
+                        <div class="score-stat">
+                            <div class="score-stat-value">${score.pp.toFixed(0)}pp</div>
+                            <div class="score-stat-label">PP</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-value">${score.rank}</div>
+                            <div class="score-stat-label">Rank</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-value">${score.accuracy.toFixed(2)}%</div>
+                            <div class="score-stat-label">Accuracy</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-value">${score.max_combo}x</div>
+                            <div class="score-stat-label">Combo</div>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+            
+            document.getElementById('best-scores').innerHTML = scoresHtml;
+            renderPagination();
+            
+            setTimeout(initializeSections, 50);
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(allScores.length / scoresPerPage);
+            const paginationEl = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+
+            let paginationHtml = `
+                <button id="prev-btn" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+                <button id="next-btn" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+            `;
+
+            paginationEl.innerHTML = paginationHtml;
+
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderScores();
+                }
+            });
+
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderScores();
+                }
+            });
+        }
+
+        async function fetchBestScores() {
+            try {
+                const response = await fetch('/api/user/best');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    console.error('Server error:', data);
+                    document.getElementById('best-scores').innerHTML = `<p class="loading">Failed to load best scores: ${data.error || 'Unknown error'}</p>`;
+                    return;
+                }
+                
+                allScores = data;
+                
+                if (allScores.length === 0) {
+                    document.getElementById('best-scores').innerHTML = '<p class="loading">No best scores available yet.</p>';
+                    return;
+                }
+
+                currentPage = 1;
+                renderScores();
+                
+                setTimeout(initializeSections, 50);
+            } catch (error) {
+                console.error('Error fetching best scores:', error);
+                document.getElementById('best-scores').innerHTML = `<p class="loading">Failed to load best scores: ${error.message}</p>`;
+            }
+        }
+
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.section-toggle');
+            
+            content.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+            
+            if (!content.classList.contains('collapsed')) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+            } else {
+                content.style.maxHeight = '0';
+            }
+        }
+
+        function toggleBBCodeBox(header) {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.bbcode-box-toggle');
+            
+            content.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+            
+            if (!content.classList.contains('collapsed')) {
+                content.style.maxHeight = '600px';
+            } else {
+                content.style.maxHeight = '0';
+            }
+        }
+
+        function initializeSections() {
+            const sections = document.querySelectorAll('.section-content');
+            sections.forEach(section => {
+                section.style.maxHeight = section.scrollHeight + 'px';
+            });
+            
+            const bbcodeBoxes = document.querySelectorAll('.bbcode-box-content');
+            bbcodeBoxes.forEach(box => {
+                if (!box.classList.contains('collapsed')) {
+                    box.style.maxHeight = '600px';
+                }
+            });
+        }
+
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = src;
+            lightbox.classList.add('show');
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('show');
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcons(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcons(false);
+            }
+        }
+
+        function updateThemeIcons(isDark) {
+            const btn = document.getElementById('theme-toggle');
+            const moon = btn.querySelector('.icon-moon');
+            const sun = btn.querySelector('.icon-sun');
+            
+            if (isDark) {
+                moon.style.display = 'none';
+                sun.style.display = 'block';
+            } else {
+                moon.style.display = 'block';
+                sun.style.display = 'none';
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons(isDark);
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        initTheme();
+
+        fetchUserData();
+        fetchBestScores();
+    </script>
+</body>
+</html>
