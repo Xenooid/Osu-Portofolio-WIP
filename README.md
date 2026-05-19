@@ -100,7 +100,3 @@ This project is open source and available under the MIT License.
 ## Support
 
 If you have any questions or run into issues, feel free to open an issue in the repository!
-
----
-
-Made with 💖 for the osu! community
