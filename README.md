@@ -24,8 +24,8 @@ A modern, responsive portfolio website for osu! player Xenoid, featuring real-ti
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Xenooid/Osu-Portofolio-WIP-.git
-   cd Osu-Portofolio-WIP-
+   git clone https://github.com/Xenooid/Osu-Portofolio-WIP.git
+   cd Osu-Portofolio-WIP
    ```
 
 2. **Install dependencies**
