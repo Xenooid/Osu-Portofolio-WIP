@@ -92,7 +92,6 @@ All styling is done with CSS custom properties in `index.html`. You can easily c
 
 - **Player**: [Xenoid](https://osu.ppy.sh/users/Xenoid)
 - **API**: [osu! API v2](https://osu.ppy.sh/docs/index.html)
-- **Design Inspiration**: [example.html](example.html)
 
 ## License
 
